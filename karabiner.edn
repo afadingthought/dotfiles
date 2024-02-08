@@ -1,0 +1,703 @@
+{ 
+        :profiles {
+                :Default {
+                        :default true
+
+                        :sim     30     ;; simultaneous key press threshold (def: 50)
+                                        ;; simlayer is implemented with to_if_alone and simultaneous key press feature
+                                        ;; if keydown event for two different keys are pressed within :sim ms, the keypresses are considered simultaneous  
+                                        ;; different from simlayers. This is for cases like [:a :b]
+                        :delay   130    ;; to_delayed_action_delay_milliseconds (def: 500)
+                                        ;; basically it means time after which the key press is count delayed
+                                        ;; after :delay ms, the key press is considered to be delayed (used for double-press macros)
+                                        ;; NOTE: this should be equal to :held for mod-tap layers
+                        :held    130    ;; to_if_held_down_threshold_milliseconds (def: 500)
+                                        ;; key is fired twice when :held ms is elapsed (otherwise seen as a hold command) (TODO WHAT IS THIS??)
+                                        ;; useful for knowing when escape term finishes with caps mode.
+                                        ;; NOTE: this should be equal to :delay for mod-tap layers
+                        :alone   129    ;; to_if_alone_timeout_milliseconds (def: 1000)
+                                        ;; affects to_if_alone behavior
+                                        ;; simlayer is implemented with to_if_alone and simultaneous key press feature
+                                        ;; if keyup event comes within :alone ms from keydown, the key is not just pressed but held
+                                        ; NOTE: (I think) this must be just less than the delay / held value to avoid bug where mod-tap layer stays 1
+                }
+                }
+        :simlayer-threshold 30          ;; simultaneous_threshold_milliseconds (def: 50)
+
+;;--------------------------------------TEMPLATES, APPS, LAYERS-------------------------------------------------------------------------------------------
+        :templates {
+                :alfred "osascript -e 'tell application id \"com.runningwithcrayons.Alfred\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
+                :btt "osascript -e 'tell application \"BetterTouchTool\"' -e 'trigger_named \"%s\"' -e 'end tell'"
+                :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
+                :open "open \"%s\""
+                :open-g "open -g \"%s\""
+                :ts "osascript -e 'tell application \"System Events\" to keystroke \"c\" using {command down}'\\
+                        -e 'delay 0.1'\\
+                        -e 'tell application \"textsoapAgent\" to set oldTextValue to the Clipboard'\\
+                        -e 'tell application \"textsoapAgent\" to set newTextValue to cleanText oldTextValue with \"%s\"'\\
+                        -e 'tell application \"textsoapAgent\" to set the Clipboard to newTextValue'\\
+                        -e 'tell application \"System Events\" to keystroke \"v\" using {command down}'"
+                :sc "echo \"%s\"|shortcuts run \"%s\" -i -" ;;Pay attention that the Shortcut input goes before the Shortcut name.
+                :yabai "/opt/homebrew/bin/yabai -m %s"
+                }
+        :applications {
+                :arc ["company.thebrowser.Browser"]
+                :terminal ["com.apple.Terminal"]
+                :finalcutpro ["com.apple.FinalCut"]
+                }
+
+        ;:simlayers {
+        ;       :w-mode {:key :w :condi [:!del-mode :!f19-mode :!caps-modew :!z-mode :!a-mode :!sd-mode]
+        ;               :simo {:interrupt false :dorder :insensitive :uorder :insensitive}
+        ;               :afterup [{:set ["fpress" 0]} {:set ["gpress" 0]} {:set ["dpress" 0]} {:set ["rpress" 0]}]}
+        ;}
+
+;;--------------------------------------LAYERS CREATION---------------------------------------------------------------------------------------------------
+        :main [
+       {:des "Modes/Layers Creation"
+                :rules [
+        ;;DEL MODE - I need it to work with modifiers and could not figure out how to do it as template. Works on F19. NOT on SD Mode.
+                [:semicolon ["del-mode" 1]
+                        [:!w-mode :!spacebarpress :!caps-mode :!z-mode :!a-mode :!sd-mode :!f-mode]
+                        {:afterup ["del-mode" 0] :alone {:key :semicolon :repeat false}}]
+        ;;CAPS & F19 MODES: Quick tap CAPS = ESCAPE and CAPS MODE. Held = f19 for Superkey Seek (closes CAPS MODE).
+                [:##caps_lock ["caps-mode" 1]
+                        [:!del-mode :!f19-mode :!z-mode :!a-mode :!sd-mode :!w-mode :!f-mode]
+                        {:afterup [["caps-mode" 0] ["f19-mode" 0]] :alone {:key :escape}
+                        :held [["caps-mode" 0] ["f19-mode" 1] {:key :f19}]
+                        :params {:held 160 :delay 160 :alone 159}}]
+        ;;W MODE: Window Management
+                [:w nil [:!del-mode :!f19-mode :!caps-mode :!z-mode :!a-mode :!sd-mode :!f-mode]
+                        {:alone {:key :w :halt true} :delayed {:canceled {:key :w}}
+                        :held {:set ["w-mode" 1] :repeat false}
+                        :afterup {:set ["w-mode" 0]}}]   
+        ;;A MODE: KIKI AI
+                [:a nil [:!del-mode :!f19-mode :!caps-mode :!z-mode :!sd-mode :!w-mode :!f-mode]
+                        {:alone {:key :a :halt true} :delayed {:canceled {:key :a}}
+                        :held {:set ["a-mode" 1] :repeat false}
+                        :afterup {:set ["a-mode" 0]}}]                      
+        ;;SD MODE: Text, Window, and Tabs Navigation (Super Duper Mode)
+               [{:sim [:s :d] :simo {:interrupt true :dorder :insensitive :uorder :insensitive
+                        :afterup {:set ["sd-mode" 0]}} :modi {:optional :any}} {:set ["sd-mode" 1]}
+                        [:!del-mode :!f19-mode :!caps-mode :!z-mode :!a-mode :!w-mode :!f-mode]]
+        ;;C MODE: Cursor Movement, Dragging and Clicking
+                [:f nil [:!del-mode :!f19-mode :!caps-mode :!z-mode :!sd-mode :!w-mode :!a-mode]
+                        {:alone {:key :f :halt true} :delayed {:canceled {:key :f}}
+                        :held {:set ["f-mode" 1] :repeat false}
+                        :afterup {:set ["f-mode" 0]}}] 
+        ;;Z MODE: Markdown and Text Transformations
+                [:z nil [:!del-mode :!f19-mode :!caps-mode :!a-mode :!sd-mode :!w-mode :!f-mode]
+                        {:alone {:key :z :halt true} :delayed {:canceled {:key :z}}
+                        :held {:set ["z-mode" 1] :repeat false}
+                        :afterup {:set ["z-mode" 0]}}]
+              ]
+       },
+
+;;--------------------------------------CLEAN BASE LAYER---------------------------------------------------------------------------------------------------
+        {:des "Final Cut Pro"
+                :rules [ :finalcutpro
+                        [:!CSm :!T1]
+                        [:!CScomma :!T2]
+                        [:!CSperiod :!T3]
+                        [:!CSj :!T4]
+                        [:!CSk :!T5]
+                        [:!CSl :!T6]
+                        [:!CSu :!T7]
+                        [:!CSi :!T8]
+                        [:!CSo :!T9]
+                ]},
+                
+        {:des "F buttons with FN"
+                :rules [
+                ;;Numbers + FN = F Keys
+                        [:!Fequal_sign :f12]
+                        [:!Fhyphen :f11]
+                        [:!F0 :f10]
+                        [:!F9 :f9]
+                        [:!F8 :f8]
+                        [:!F7 :f7]
+                        [:!F6 :f6]
+                        [:!F5 :f5]
+                        [:!F4 :f4]
+                        [:!F3 :f3]
+                        [:!F2 :f2]
+                        [:!F1 :f1]
+                ]}
+        {:des "Basics"
+                :rules [
+                        [:delete_or_backspace :vk_none]
+                        [:non_us_backslash :grave_accent_and_tilde]
+                        [:right_control :fn]
+                ]
+        }
+
+;;-----------------------------------------DELETE MODS------------------------------------------------------------------------------------------------------
+        {:des "Delete Shortcuts"
+                :rules [
+                        [:!Sright_shift :caps_lock [:!w-mode :!caps-mode :!z-mode :!a-mode]]    ;;Enable caps lock left + right shift
+                        [:!PSright_shift :caps_lock [:!w-mode :!caps-mode :!z-mode :!a-mode]]   ;;Disable caps lock left + right shift while on caps lock
+                        [:##right_shift :right_shift [:!w-mode :!caps-mode :!z-mode :!a-mode]
+                                {:alone {:key :delete_forward}}]                                ;;Single tap right shift delete forward
+                        [:##left_shift :left_shift [:!w-mode :!caps-mode :!z-mode :!a-mode]
+                                {:alone {:key :delete_or_backspace}}]                           ;;Single tap left shift delete backward
+                ;;DEL MODE LAYER
+                        [:condi :del-mode :!terminal] [:##a :!Odelete_or_backspace]             ;;Delete words backward while pressing semicolon + a | outside Terminal
+                        [:condi :del-mode :terminal] [:##a :!Tw]                                ;;Delete words backward while pressing semicolon + a | in Terminal
+                ]},
+
+;;----------------------------------------CAPS LOCK MODE------------------------------------------------------------------------------------------------------
+        {:des "Caps Mode Rules - Lasts only for a few milliseconds"
+                :rules [:caps-mode
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>BASE LAYER NUMBERS ROW>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                ;;MEDIA BUTTONS on numbers
+                        [:0 :mute [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:9 :fastforward [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:8 :play_or_pause [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:7 :rewind [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:6 :vk_none [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:5 [:km "5AE0141E-36C9-4CD3-A411-00135500323E"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:4 :launchpad [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:3 :mission_control [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:2 :display_brightness_increment [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:1 :display_brightness_decrement [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:hyphen :volume_decrement [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:equal_sign :volume_increment [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;KEYBOARD ILLUMINATION with CMD + 1 & 2
+                        [:!C2 :illumination_increment [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:!C1 :illumination_decrement [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ARC EXTENSIONS SUBLAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        [:e [["epress" 1]] [["dpress" 0]["apress" 0]["cpress" 0]] {:afterup {:set ["epress" 0]}}]
+                        [:spacebar :!CSx [["epress" 1] :arc]] ;Close Overlay Extension
+                        [:r :!Or [["epress" 1] :arc]] ;Readwise Add
+                        [:y :!CSy [["epress" 1] :arc]] ;Activate Bitwarden Extension
+                        [:u :!CSu [["epress" 1] :arc]] ;Autofill with Bitwarden
+                        [:p [:btt "pipArc"] [["epress" 1] :arc]] ;PiP for videos
+                        [:d :!Oe [["epress" 1] :arc]] ;Raindrop Add
+                        [:h [:btt "ArcSlower"] ["epress" 1]] ;Arc Media - Slower
+                        [:j [:btt "ArcRewind15"] ["epress" 1]] ;Arc Media - Rewind 15 Secs
+                        [:k [:btt "ArcForward15"] ["epress" 1]] ;Arc Media - Forwad 15 Secs
+                        [:l [:btt "ArcFaster"] ["epress" 1]] ;Arc Media - Faster
+                        [:m [:btt "ArcRewindABit"] ["epress" 1]] ;Arc Media - Rewind a Bit
+                        [:comma [:btt "ArcForwardABit"] ["epress" 1]] ;Arc Media - Forward a Bit
+                        [:period [:btt "ArcResetSpeed"] ["epress" 1]] ;Arc Media - Reset Speed
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>ARC POPUPS AND MACROS SUBLAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        [:a [["apress" 1]] [["dpress" 0]["epress" 0]["cpress" 0]] {:afterup {:set ["apress" 0]}}]
+                        [:return_or_enter [:alfred "archistory" "com.chubamisc.afred"] ["apress" 1]]            ;arc history workflow
+                        [:right_shift [:km "C85D1652-EDB6-4FA9-9220-6627FB3F9801"] [["apress" 1] :arc]]         ;Open current page in OpenIn
+                        [:!Cright_shift [:km "71671EF7-5DFF-4560-A1AB-34696D6604E8"] [["apress" 1] :arc]]       ;Open link under mouse in OpenIn
+                        [:spacebar [:km "7F5B9AD9-22E4-4FC4-82E3-78BB0BCEC2EC"] ["apress" 1]]                   ;Open Clipboard in OpenIn
+                        [:y [:km "EBA2B560-ED10-4AAA-A5E1-055F5B863CCD"] ["apress" 1]]                          ;Google selection as unpinned and see
+                        [:u [:km "60294873-DC1C-47B1-B08A-929993894468"] ["apress" 1]]                          ;Google selection as float
+                        [:i [:km "BB38D111-C565-4E1B-BB98-60CCA30EA8EE"] ["apress" 1]]                          ;Google selection as tile
+                        [:o [:km "0C7154AC-DF11-4A50-BA9E-349F7F1492A6"] ["apress" 1]]                          ;Google selection as unpinned in BG
+                        [:h [:km "AD5525D0-64FE-41DB-A81E-74C5F998B932"] [["apress" 1] :arc]]                   ;Open current page as unpinned and see
+                        [:j [:km "2FEBFB46-0BBB-4B15-AA7D-5CBBDA2E84FF"] [["apress" 1] :arc]]                   ;Open current page as float
+                        [:k [:km "64F77118-7AA7-4E6A-945B-E88E2A0EE634"] [["apress" 1] :arc]]                   ;Open current page as tile
+                        [:l [:km "5824E648-7B18-429A-AB7A-60167C6CD65B"] [["apress" 1] :arc]]                   ;Open current page as unpinned in BG
+                        [:n [:km "98DF4112-D153-487F-826F-9F124EA200D4"] [["apress" 1] :arc]]                   ;Open link under mouse as unpinned and see
+                        [:m [:km "BCE84B1F-9D35-447C-8956-AE6D3E2BD4B2"] [["apress" 1] :arc]]                   ;Open link under mouse as float
+                        [:comma [:km "C073CBCB-5320-4A1D-969D-25C2562D24F3"] [["apress" 1] :arc]]               ;Open link under mouse as tile
+                        [:period [:km "A4664705-7F68-4EE7-B58F-79D38B45E9BE"] [["apress" 1] :arc]]              ;Open link under mouse as unpinned in BG
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DROPOVER SUBLAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        [:d [["dpress" 1]] [["apress" 0]["epress" 0]["cpress" 0]] {:afterup {:set ["dpress" 0]}}]
+                        [:return_or_enter [:km "7A9F80E0-042D-4620-B414-11B2D74736EB"] ["dpress" 1]]    ;Dropover search bar on shelf
+                        [:spacebar :!STv ["dpress" 1]]                                                  ;Dropover shelf from Clipboard
+                        [:left_command [:!Cc :!STv] ["dpress" 1]]                                       ;Dropover from selected file, through Clipboard
+                        [:r [:sc "" "Drop Reveal"] ["dpress" 1]]                                        ;Reveal Dropover Shelf content in Finder
+                        [:y [:sc "" "Drop Desktop"] ["dpress" 1]]                                       ;Move Content of Dropover Shelf to Desktop
+                        [:u [:sc "quick" "Drop Optimize"] ["dpress" 1]]                                 ;Quick Clop Optimize Media on Dropover Shelf
+                        [:i [:sc "aggressive" "Drop Optimize"] ["dpress" 1]]                            ;Aggressive Clop Optimize Media on Dropover Shelf
+                        [:o [:sc "workflow" "Drop Optimize"] ["dpress" 1]]                              ;Clop Alfred Workflow for contents of Dropover Shelf
+                        [:h [:sc "" "Drop Previous"] ["dpress" 1]]                                      ;Open previous Dropover shelf
+                        [:j [:sc "" "Drop Move"] ["dpress" 1]]                                          ;Move contents of Dropover shelf to frontmost Finder path 
+                        [:k [:sc "" "Drop Airdrop"] ["dpress" 1]]                                       ;Airdrop content from Dropover shelf
+                        [:l [:km "C2AE2BB7-0A49-4C33-B417-83D7CB8CE155"] ["dpress" 1]]                  ;Close Dropover Shelf
+                        [:c [:sc "" "Drop Cleanshot"] ["dpress" 1]]                                     ;Edit Dropover Shelf contents in Cleanshot
+                        [:g [:sc "" "Drop Gif"] ["dpress" 1]]                                           ;Open Gifski to convert video to Gif from Dropover Shelf
+                        [:n [:sc "" "Drop Delete"] ["dpress" 1]]                                        ;Delete the files in a Dropover shelf
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CLEANSHOT X SUBLAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        [:c [["cpress" 1]] [["apress" 0]["epress" 0]["dpress" 0]] {:afterup {:set ["cpress" 0]}}]
+                        [:d :!CS5 ["cpress" 1]]         ;All in One bar
+                        [:h :!OS5 ["cpress" 1]]         ;Cature History
+                        [:j :!CS4 ["cpress" 1]]         ;Capture Area
+                        [:k :!OS4 ["cpress" 1]]         ;Capture Area to Clipboard
+                        [:l :!CS3 ["cpress" 1]]         ;Capture Area & Annotate
+                        [:y :!OS1 ["cpress" 1]]         ;OCR with Linebreaks
+                        [:u :!OS2 ["cpress" 1]]         ;OCR without Linebreaks
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CAPS LOCK - BASE LAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                ;;DELETE BEAR NOTE
+                        [:w [:km "9A812F68-7857-4ACE-A7BD-8AF3AEEE57CE"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;READWISE TO BEAR Shortcut
+                        [:r "osascript -e 'tell application id \"com.runningwithcrayons.Alfred\" to run trigger \"getlink\" in workflow \"com.chubamisc.afred\"';\\
+                                shortcuts run \"RW to Bear\"" [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;ANSWER IMESSAGE NOTIFICATION
+                        [:i [:km "DC6A4949-C8D1-4024-AC50-74D34142C8AC"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;UPDATE PLEX SERVER
+                        [:p [:!STp [:km "838EBFC2-7F83-48C5-AF0C-248638A8AD65"]] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;DAY ONE MASTER SHORTCUT
+                        [:!Cd [:sc "" "Day One Master"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;FINDER WINDOW ON DESKTOP
+                        [:f [:alfred "desktop" "com.finder.chuba"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;FINDER WINDOW ON DROPOVER
+                        [:!Cf [:alfred "dropover" "com.finder.chuba"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;FAVORITES ALFRED WORKFLOW
+                        [:g [:alfred "init" "com.zeitlings.favs"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;HOMEROW SCROLL
+                        [:h :!Of18 [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;HOMEROW HINTS
+                        [:j :!Cf18 [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SUPERSEEK STATIC
+                        [:k :!Tf18 [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;GRAB LINK OF FRONTMOST APP
+                        [:l [:alfred "getlink" "com.chubamisc.afred"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SPANISH Ñ
+                        [:semicolon [:!On :n] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SPANISH TILDE
+                        [:quote :!Oe [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;MOUSE CLICK OR FOCUS
+                        [:v [:yabai "window --focus mouse"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SCREEN SAVER ON ","
+                        [:comma nil [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]] {:afterup [:alfred "screensaver" "com.chubamisc.afred"]}]
+                ;;SLEEP SYSTEM WITH DOUBLE TAP PERIOD OR SINGLE FOR SLEEP DISPLAY
+                        [:period [:alfred "sleepsystem" "com.chubamisc.afred"] [["sleep-press" 1]["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:period [["sleep-press" 1]] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]
+                                {:delayed {:invoked [["sleep-press" 0] [:alfred "sleepscreen" "com.chubamisc.afred"]]
+                                :canceled ["sleep-press" 0]} :params {:delay 200}}]
+                ;;CAFFEINATE WORKFLOW
+                        [:s [:alfred "caff" "com.shawn.patrick.rice.caffeinate.control"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;MENUBAR EXPAND
+                        [:b :!STb [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;CLOSE NOTIFICATIONS
+                        [:n [:btt "CloseNotifications"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;MENU BAR WORKFLOW
+                        [:m [:alfred "menu" "com.tedwise.menubarsearch"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;MENU BAR OF CURRENT APP
+                        [:!Cm :!CSslash [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;NEW FLOATING BEAR NOTE
+                        [:spacebar [:sc "∞nn∞" "Capture"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;NEW TILED BEAR NOTE
+                        [:!Cspacebar [:yabai "signal --add label=tile_next title='^New Note$' event=window_created\\
+                                action='/opt/homebrew/bin/yabai -m signal --remove tile_next;\\
+                                /opt/homebrew/bin/yabai -m window $YABAI_WINDOW_ID --toggle float';\\
+                                echo \"∞nn∞\"|shortcuts run \"Capture\" -i -"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;NEW FLOATING LITTLE ARC
+                        [:right_shift [[:yabai "signal --remove littlearc;\\
+                                /opt/homebrew/bin/yabai -m signal --add label=littlearccmd event=window_title_changed\\
+                                action=\"~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/LittleArcCMD.sh floatcenter\""] :!TOCn]
+                                [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;NEW TILED LITTLE ARC
+                        [:!Cright_shift [[:yabai "signal --remove littlearc;\\
+                                /opt/homebrew/bin/yabai -m signal --add label=littlearccmd event=window_title_changed\\
+                                action=\"~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/LittleArcCMD.sh tile\""] :!TOCn]
+                                [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ]},
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+;;-------------------------------------F19 MODE - SUPERKEY------------------------------------------------------------------------------------------------------
+        {:des "F19 Mode - (Seek from Superkey)"
+                :rules [:f19-mode
+                        [:spacebar nil nil {:alone {:key :spacebar :halt true} :delayed {:canceled [{:key :spacebar}            ;;Spacebar sublayer creation
+                                {:set ["spacebarpress" 0]}]} :held {:set ["spacebarpress" 1]}
+                                :afterup {:set ["spacebarpress" 0]}}]
+                        [:##left_command :delete_or_backspace]                                                                  ;;Backspace
+                        [:##right_command :tab]                                                                                 ;;Tab
+                        [:##e [["caps-mode" 1] {:key :escape}] [["spacebarpress" 1] ["f19-mode" 1]]]                            ;;Escape on Spacebar Sublayer
+                        [:semicolon [:!On :n] [["spacebarpress" 1] ["f19-mode" 1]]]                                             ;;Spanish ñ on Spacebar Sublayer
+                        [:quote :!Oe [["spacebarpress" 1] ["f19-mode" 1]]]                                                      ;;Spanish Tilde on Spacebar Sublayer
+                        [:##a nil nil {:alone {:key :a :halt true} :delayed {:canceled {:key :a}} :held {:key :left_control}}]  ;;Hold A for CTRL
+                        [:##s nil nil {:alone {:key :s :halt true} :delayed {:canceled {:key :s}} :held {:key :left_option}}]   ;;Hold S for OPT
+                        [:##d nil nil {:alone {:key :d :halt true} :delayed {:canceled {:key :d}} :held {:key :left_command}}]  ;;Hold D for CMD
+                        [:##tab :vk_none] ;;I am deactivating this tab.
+
+                ]},
+
+;;-------------------------------------W MODE - YABAI----------------------------------------------------------------------------------------------------------
+        {:des "W Mode"
+                :rules [:w-mode
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CMD SUBLAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                ;;YABAI SERVER - Start
+                        [:!Ccaps_lock "/opt/homebrew/bin/yabai --start-service" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;TOGGLE Layout as Stack or tiles with Command
+                        [:!Creturn_or_enter "/opt/homebrew/bin/yabai -m space --layout \"$(/opt/homebrew/bin/yabai -m query --spaces --space | /opt/homebrew/bin/jq -r 'if .type == \"bsp\" then \"stack\" else \"bsp\" end')\"" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;CLEAR Cache of Floats position
+                        [:!Cspacebar "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/ClearFloatCache.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SHOW DESKTOP & MISSION CONTROL (with no modifiers)
+                        [:##e :mission_control [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;TOGGLE SPLIT (horizontal or vertical)
+                        [:!Ct [[:yabai "window --toggle split"]] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 7
+                        [:!Cu [:yabai "space --focus 7"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 8
+                        [:!Ci [:yabai "space --focus 8"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 9
+                        [:!Co [:yabai "space --focus 9"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 4
+                        [:!Cj [:yabai "space --focus 4"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 5
+                        [:!Ck [:yabai "space --focus 5"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 6
+                        [:!Cl [:yabai "space --focus 6"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;DESTROY Current Space
+                        [:!Csemicolon [:yabai "space --destroy \"$(yabai -m query --spaces --display | jq -r 'map(select(.\"has-focus\" == true))[0].index')\""] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]                
+                ;;DESTROY Last Space                       
+                        [:!Cquote [:yabai "space --destroy last"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 1
+                        [:!Cm [:yabai "space --focus 1"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 2
+                        [:!Ccomma [:yabai "space --focus 2"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Space 3
+                        [:!Cperiod [:yabai "space --focus 3"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+
+
+
+
+                ;;YABAI SERVER
+                        [:caps_lock "/opt/homebrew/bin/yabai --stop-service" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:tab "/opt/homebrew/bin/yabai --restart-service" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;STACKLINE Icons Toggle
+                        [:x "/opt/homebrew/bin/hs -c 'stackline.config:toggle(\"appearance.showIcons\")'" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;FOCUS Shifting with F
+                        [:f [["fpress" 1]] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]] {:afterup {:set ["fpress" 0]}}]
+                        [:h [:yabai "window --focus west"] ["fpress" 1]]
+                        [:j [:yabai "window --focus south"] ["fpress" 1]]
+                        [:k [:yabai "window --focus north"] ["fpress" 1]]
+                        [:l [:yabai "window --focus east"] ["fpress" 1]]
+                ;;FOCUS Cycle Forward & Backward ON WINDOWS with F - Excludes floating or Going inside Stacks
+                        [:y "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusNoStackCounter.sh" ["fpress" 1]]
+                        [:o "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusNoStackClock.sh" ["fpress" 1]]
+                ;;FOCUS Cycle Forward & Backward ON WINDOWS with F - Includes floating and Going inside Stacks
+                        [:n "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusAllForward.sh" ["fpress" 1]]
+                        [:period "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusAllBackward.sh" ["fpress" 1]]
+                ;;FOCUS Cycle IN STACKS with F   
+                        [:i [:yabai "window --focus stack.prev || /opt/homebrew/bin/yabai -m window --focus stack.last"] ["fpress" 1]]
+                        [:u [:yabai "window --focus stack.next || /opt/homebrew/bin/yabai -m window --focus stack.first"] ["fpress" 1]]    
+                ;;OPACITY LOCK OR RESET with F
+                        [:m [:yabai "window --opacity 1.0"] ["fpress" 1]]
+                        [:comma [:yabai "window --opacity 0.0"] ["fpress" 1]]
+                ;;SWAP Windows with G
+                        [:g [["gpress" 1]] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["fpress" 0]] {:afterup {:set ["gpress" 0]}}]
+                        [:h [:yabai "window --swap west"] ["gpress" 1]]
+                        [:j [:yabai "window --swap south"] ["gpress" 1]]
+                        [:k [:yabai "window --swap north"] ["gpress" 1]]
+                        [:l [:yabai "window --swap east"] ["gpress" 1]]
+                ;;STACK Windows with D
+                        [:d [["dpress" 1]] [["cpress" 0]["vpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]] {:afterup {:set ["dpress" 0]}}]
+                        [:h [:yabai "window west --stack $(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq -r '.id')"] ["dpress" 1]]
+                        [:j [:yabai "window south --stack $(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq -r '.id')"] ["dpress" 1]]
+                        [:k [:yabai "window north --stack $(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq -r '.id')"] ["dpress" 1]]
+                        [:l [:yabai "window east --stack $(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq -r '.id')"] ["dpress" 1]]
+                ;;INSERTION Point with D
+                        [:y [:yabai "window --insert west"] ["dpress" 1]]
+                        [:u [:yabai "window --insert south"] ["dpress" 1]]
+                        [:i [:yabai "window --insert north"] ["dpress" 1]]
+                        [:o [:yabai "window --insert east"] ["dpress" 1]]
+                        ;;INSERTION as Stack
+                        [:right_shift [:yabai "window --insert stack"] ["dpress" 1]]
+                        ;;INSERTION as Float... canceling the first one which perfectly centers when loading because windows load first on layout sometimes taking half screen... preferred to give a grid. And the ones that can't be resized anyways already have a rule to float.
+                        ;;[:spacebar "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/InsertAsFloat.sh" ["dpress" 1]]
+                        [:spacebar [:yabai "signal --add label=float_next_window_created event=window_created action='/opt/homebrew/bin/yabai -m signal --remove float_next_window_created; /opt/homebrew/bin/yabai -m window $YABAI_WINDOW_ID --toggle float --grid 6:4:1:1:2:4'"] ["dpress" 1]]
+                ;;ROTATE Arrangement with R
+                        [:r [["rpress" 1]] [["cpress" 0]["vpress" 0]["dpress" 0]["gpress" 0]["fpress" 0]] {:afterup {:set ["rpress" 0]}}]
+                        [:h [:yabai "space --rotate 90"] ["rpress" 1]]
+                        [:l [:yabai "space --rotate 270"] ["rpress" 1]]
+                ;;ROTATE Windows within Arrangement with R
+                        [:j "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleWindowsOnlyclockwise.sh" ["rpress" 1]]
+                        [:k "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleWindowsOnlycounter.sh" ["rpress" 1]]
+                ;;RESIZE Windows with R
+                        [:y [:yabai "window --resize right:-50:0 2> /dev/null || /opt/homebrew/bin/yabai -m window --resize left:-50:0 2> /dev/null"] ["rpress" 1]]
+                        [:u [:yabai "window --resize bottom:0:50 2> /dev/null || /opt/homebrew/bin/yabai -m window --resize top:0:50 2> /dev/null"] ["rpress" 1]]
+                        [:i [:yabai "window --resize bottom:0:-50 2> /dev/null || /opt/homebrew/bin/yabai -m window --resize top:0:-50 2> /dev/null"] ["rpress" 1]]
+                        [:o [:yabai "window --resize right:50:0 2> /dev/null || /opt/homebrew/bin/yabai -m window --resize left:50:0 2> /dev/null"] ["rpress" 1]]
+                ;;MOVE floating windows with R
+                        [:n :!SFleft_arrow ["rpress" 1]]
+                        [:m :!SFdown_arrow ["rpress" 1]]
+                        [:comma :!SFup_arrow ["rpress" 1]]
+                        [:period :!SFright_arrow ["rpress" 1]]
+                ;;MOVE (Warp) Windows with Nothing
+                        [:h [:yabai "window --warp west"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:j [:yabai "window --warp south"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:k [:yabai "window --warp north"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:l [:yabai "window --warp east"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;MIRROR on Axis with Nothing
+                        [:u [:yabai "space --mirror y-axis"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:i [:yabai "space --mirror x-axis"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;SWITCH to Previous or Next Space with Nothing
+                        [:m [:yabai "space --focus prev"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        ;;[:n [:!Tleft_arrow] [["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:comma [:yabai "space --focus next"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        ;;[:period [:!Tright_arrow] [["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;THROW Window to previous or next space and GO with G
+                        [:m [:yabai "window --space prev; /opt/homebrew/bin/yabai -m space --focus prev"] ["gpress" 1]]
+                        ;;[:m [:yabai "window --space prev; /opt/homebrew/bin/yabai -m query --spaces --space prev | /opt/homebrew/bin/jq -r '.windows[0] // empty' | xargs /opt/homebrew/bin/yabai -m window --focus"] [["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:comma [:yabai "window --space next; /opt/homebrew/bin/yabai -m space --focus next"] ["gpress" 1]]
+                        ;;[:comma [:yabai "window --space next; /opt/homebrew/bin/yabai -m query --spaces --space next | /opt/homebrew/bin/jq -r '.windows[0] // empty' | xargs /opt/homebrew/bin/yabai -m window --focus"] [["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;THROW Window to previous or next space and DON'T GO with D
+                        [:m [:yabai "window --space prev"] ["dpress" 1]]
+                        [:comma [:yabai "window --space next"] ["dpress" 1]]
+                ;;SWITCH to First, Last, or Recent Space with Nothing
+                        [:n [:yabai "space --focus first"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:period [:yabai "space --focus last"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:right_shift [:yabai "space --focus recent"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;THROW Window to First or Last Space and GO with G
+                        [:n [:yabai "window --space first; /opt/homebrew/bin/yabai -m space --focus first"] ["gpress" 1]]
+                        [:period [:yabai "window --space last; /opt/homebrew/bin/yabai -m space --focus last"] ["gpress" 1]]
+                ;;THROW Window to First or Last Space and DON'T GO with D
+                        [:n [:yabai "window --space first"] ["dpress" 1]]
+                        [:period [:yabai "window --space last"] ["dpress" 1]]
+                ;;CREATE spaces with Nothing
+                        [:semicolon [:yabai "space --create && echo \"refresh\" | nc -U /tmp/yabai-indicator.socket"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:quote [:yabai "space --create && echo \"refresh\" | nc -U /tmp/yabai-indicator.socket && /opt/homebrew/bin/yabai -m space --focus last"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;CREATE Space, Throw Window and Go or Don't with G and D
+                        [:semicolon [:yabai "space --create && echo \"refresh\" | nc -U /tmp/yabai-indicator.socket && /opt/homebrew/bin/yabai -m window --space last && /opt/homebrew/bin/yabai -m space --focus last"] ["gpress" 1]]
+                        [:semicolon [:yabai "space --create && echo \"refresh\" | nc -U /tmp/yabai-indicator.socket && /opt/homebrew/bin/yabai -m window --space last"] ["dpress" 1]]
+                ;;THROW Window to specific window and Go with V
+                        [:v [["vpress" 1]] [["cpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]] {:afterup {:set ["vpress" 0]}}]
+                        [:u [:yabai "window --space 7; /opt/homebrew/bin/yabai -m space --focus 7"] ["vpress" 1]]
+                        [:i [:yabai "window --space 8; /opt/homebrew/bin/yabai -m space --focus 8"] ["vpress" 1]]
+                        [:o [:yabai "window --space 9; /opt/homebrew/bin/yabai -m space --focus 9"] ["vpress" 1]]
+                        [:j [:yabai "window --space 4; /opt/homebrew/bin/yabai -m space --focus 4"] ["vpress" 1]]
+                        [:k [:yabai "window --space 5; /opt/homebrew/bin/yabai -m space --focus 5"] ["vpress" 1]]
+                        [:l [:yabai "window --space 6; /opt/homebrew/bin/yabai -m space --focus 6"] ["vpress" 1]]
+                        [:m [:yabai "window --space 1; /opt/homebrew/bin/yabai -m space --focus 1"] ["vpress" 1]]
+                        [:comma [:yabai "window --space 2; /opt/homebrew/bin/yabai -m space --focus 2"] ["vpress" 1]]
+                        [:period [:yabai "window --space 3; /opt/homebrew/bin/yabai -m space --focus 3"] ["vpress" 1]]
+                ;;THROW Window to specific window and DON'T GO with C
+                        [:c [["cpress" 1]] [["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]] {:afterup {:set ["cpress" 0]}}]
+                        [:u [:yabai "window --space 7"] ["cpress" 1]]
+                        [:i [:yabai "window --space 8"] ["cpress" 1]]
+                        [:o [:yabai "window --space 9"] ["cpress" 1]]
+                        [:j [:yabai "window --space 4"] ["cpress" 1]]
+                        [:k [:yabai "window --space 5"] ["cpress" 1]]
+                        [:l [:yabai "window --space 6"] ["cpress" 1]]
+                        [:m [:yabai "window --space 1"] ["cpress" 1]]
+                        [:comma [:yabai "window --space 2"] ["cpress" 1]]
+                        [:period [:yabai "window --space 3"] ["cpress" 1]]
+                ;;TOGGLE Maximizing to Parent with R
+                        [:return_or_enter [:yabai "window --toggle zoom-parent"] ["rpress" 1]]
+                ;;TOGGLE Maximizing Full with Nothing
+                        [:return_or_enter "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/ToggleMaximize.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;TOGGLE Real Fullscreen with BTT with F
+                        [:return_or_enter [:btt "RealFull"] ["fpress" 1]]
+                ;;TOGGLE Float with nothing
+                        [:spacebar "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/ToggleFloatRememberSize.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;TOGGLE Padding with nothing
+                        [:t [[:yabai "space --toggle padding; /opt/homebrew/bin/yabai -m space --toggle gap"]] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;TOGGLE Normal or Above Layer with Nothing
+                        [:q "layer=\"$(/opt/homebrew/bin/yabai --message query --windows --window | /opt/homebrew/bin/jq --raw-output .layer)\" && /opt/homebrew/bin/yabai --message window --layer \"$([ \"$layer\" = 'normal' ] && echo 'above' || echo 'normal')\"" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;RESET Balance with nothing
+                        [:b [[:yabai "space --balance"]] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                ;;HIDE ALL with OPT
+                        [:e [:btt "HideAll"]["fpress" 1]]
+                ;;REVEAL WINDOWS with R
+                        [:e [:btt "AppWindows"]["rpress" 1]]
+                ;;HIDE current window or all other windows with nothing
+                        [:o :!Ch [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:y :!COh [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:1 [:yabai "query --windows --window > ~/Desktop/yabai_output.txt"]]
+                ]},
+
+;;------------------------------------KIKI AI LAYER--------------------------------------------------------------------------------------------------------
+        {:des "A Mode"
+                :rules [:a-mode
+                        [:r [["rpress" 1]] [["dpress" 0]["bpress" 0]] {:afterup {:set ["rpress" 0]}}]
+                        [:b [["bpress" 1]] [["rpress" 0]["dpress" 0]] {:afterup {:set ["bpress" 0]}}]
+                        [:d [["dpress" 1]] [["rpress" 0]["bpress" 0]] {:afterup {:set ["dpress" 0]}}]
+                ;;REPLACE
+                ;;Selected text as Input for Asking
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,customPrompt"] ["rpress" 1]]
+                ;;Selected text as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,useAsPrompt"] ["rpress" 1]]
+                ;;Selected text as Input for Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,4"] ["rpress" 1]]
+                ;;PLACE BELOW
+                ;;Selected text as Input for Asking
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,6,customPrompt"] ["bpress" 1]]
+                ;;Selected text as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,6,useAsPrompt"] ["bpress" 1]]
+                ;;Selected text as Input for Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,6"] ["bpress" 1]]
+                ;;DIALOG
+                ;;Selected text as Input for Asking
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,customPrompt"] ["dpress" 1]]
+                ;;Selected text as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,useAsPrompt"] ["dpress" 1]]
+                ;;Selected text as Input for Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,1"] ["dpress" 1]]
+                ;;WITHOUT MODIFIERS
+                ;;Menu With Nothing
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,custom,1"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                ;;Ask Anything
+                        [:spacebar [:alfred "kikiChat" "com.kiki.ai"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:return_or_enter [:alfred "kikiMD" "com.kiki.ai"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:!Cs [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,simplify"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:!Ct [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,translateEn"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:f [:alfred "kikiFiles" "com.kiki.ai" "filesRevealPath"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:j [:alfred "kikiFiles" "com.kiki.ai" "filesCopyContext"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                ]},
+
+;;-----------------------------------SUPER DUPER MODE---------------------------------------------------------------------------------------------------------
+        {:des "SuperDuper Mode Rules"
+                :rules [:sd-mode
+                        [:left_command :left_control]
+                ;;Arrows
+                        [:#SOCh :left_arrow :!terminal]
+                        [:#SOCj :down_arrow :!terminal]
+                        [:#SOCk :up_arrow :!terminal]
+                        [:#SOCl :right_arrow :!terminal]
+                        [:#SOCsemicolon :vk_none] ;;I always press this one by mistake
+                ;;Modifiers and Deletes
+                        ;;We exclude arc here, because the way to exit while in-app switching outside of arc
+                        ;;involves holding Command (in order not to select currect selected app),
+                        ;;in Arc, exiting window switching needs CTRL.
+                        [:##caps_lock :!Cescape :!arc]
+                        [:#COPspacebar :left_shift]
+                        [:##f :left_command :!terminal]
+                        [:##a :left_option :!terminal]
+                        [:#SOCn :delete_or_backspace :!terminal]
+                        [:#SOPperiod :delete_forward :!terminal]
+                        ;;This one is the only way to delete from current point to the end of line. Acts like command + delete forward.
+                        [:!Cperiod [:!Tk] :!terminal]
+                        [:!CSperiod [:!STk] :!terminal]
+                        ;;I want to try having a control key easy to reach in SD mode.
+                        [:##c :left_control]
+                ;;Tab Navigation (Arc has its separate rule for this)
+                        [:i :!Ttab :!arc]
+                        [:u :!STtab :!arc]
+                ;;Window Navigation (Arc has its separate rule for this)
+                        [:y :!SOtab :!arc]
+                        [:o :!Otab :!arc]
+                ;;App Navigation
+                        [:m :!Ctab]
+                        [:comma :!CStab]
+                ;;Number Pad
+                        [:!Tspacebar :spacebar]
+                        [:!Tn :0]
+                        [:!Tm :1]
+                        [:!Tcomma :2]
+                        [:!Tperiod :3]
+                        [:!Th :period]
+                        [:!Tj :4]
+                        [:!Tk :5]
+                        [:!Tl :6]
+                        [:!Ty :delete_or_backspace]
+                        [:!Tu :7]
+                        [:!Ti :8]
+                        [:!To :9]
+                        [:!Tp :!Sequal_sign]
+                        [:!Tsemicolon :hyphen]
+                ;;Let's Recover keys that will allow us quit or close apps while holding down control or command
+                        [:7 :!Ch]
+                        [:8 :!Cm]
+                        [:9 :!Cw :!arc]
+                        [:0 :!Cq]
+                ;;Tab Nav for ARC
+                        [:condi :arc :sd-mode]
+                        [:u [:!COdown_arrow]]
+                        [:i [:!COup_arrow]]
+                        [:y [:!STtab]]
+                        [:o [:!Ttab]]
+                        [:9 [:!Tw]]
+                        ;;Since we ecluded it above
+                        [:##caps_lock :!Tescape]
+                ;;For Terminal
+                        [:condi :terminal :sd-mode]
+                        [:##f [["cpress" 1]] nil {:afterup {:set ["cpress" 0]}}]
+                        [:##a [["opress" 1]] nil {:afterup {:set ["opress" 0]}}]
+                        [:##h :left_arrow [["cpress" 0]["opress" 0]]]
+                        [:##h :!Ta [["cpress" 1]["opress" 0]]]
+                        [:##h :!Oleft_arrow [["cpress" 0]["opress" 1]]]
+                        [:##l :right_arrow [["cpress" 0]["opress" 0]]]
+                        [:##l :!Te [["cpress" 1]["opress" 0]]]
+                        [:##l :!Oright_arrow [["cpress" 0]["opress" 1]]]
+                        [:##n :delete_or_backspace [["cpress" 0]["opress" 0]]]
+                        [:##n :!Tu [["cpress" 1]["opress" 0]]]
+                        [:##n :!Tw [["cpress" 0]["opress" 1]]]
+                        [:##period :delete_forward [["cpress" 0]["opress" 0]]]
+                        [:##period :!Tk [["cpress" 1]["opress" 0]]]
+                        ;;Terminal profile must use Option as meta for next one to work. In settings, profile, keyboard, in Terminal. 
+                        [:##period :!Od [["cpress" 0]["opress" 1]]]
+                        [:##j :down_arrow]
+                        [:##k :up_arrow]
+                ]},
+        
+;;------------------------------------ CURSOR/MOUSE MODE---------------------------------------------------------------------------------------------------------
+        {:des "F Mode - Cursor"
+                :rules [:f-mode
+                        [:##spacebar [["spacepress" 1]] nil {:afterup {:set ["spacepress" 0]}}]
+                        [:caps_lock :escape]
+                        [:y {:pkey :button1}]
+                        [:u {:pkey :button2}]
+                        [:i {:pkey :button3}]
+                        [:##o [:km "95B8335C-1B11-4FA2-9AC6-1C67217DC48F"]]
+                        [:##d {:pkey :button1}]
+                        [:##h {:mkey {:x -3072 :speed 2.0}} ["spacepress" 0]]
+                        [:##h {:mkey {:x -3072 :speed 1.0}} ["spacepress" 1]]
+                        [:##n {:mkey {:x -1072 :speed 0.5}} ["spacepress" 0]]
+                        [:##n {:mkey {:x -1072 :speed 1.0}} ["spacepress" 1]]
+                        [:##j {:mkey {:y 3072 :speed 2.0}} ["spacepress" 0]]
+                        [:##j {:mkey {:y 3072 :speed 1.0}} ["spacepress" 1]]
+                        [:##m {:mkey {:y 1072 :speed 0.5}} ["spacepress" 0]]
+                        [:##m {:mkey {:y 1072 :speed 1.0}} ["spacepress" 1]]
+                        [:##k {:mkey {:y -3072 :speed 2.0}} ["spacepress" 0]]
+                        [:##k {:mkey {:y -3072 :speed 1.0}} ["spacepress" 1]]
+                        [:##comma {:mkey {:y -1072 :speed 0.5}} ["spacepress" 0]]
+                        [:##comma {:mkey {:y -1072 :speed 1.0}} ["spacepress" 1]]
+                        [:##l {:mkey {:x 3072 :speed 2.0}} ["spacepress" 0]]
+                        [:##l {:mkey {:x 3072 :speed 1.0}} ["spacepress" 1]]
+                        [:##period {:mkey {:x 1072 :speed 0.5}} ["spacepress" 0]]
+                        [:##period {:mkey {:x 1072 :speed 1.0}} ["spacepress" 1]]
+                ]},
+
+;;------------------------------------Z - MARKDOWN MODE-----------------------------------------------------------------------------------------------------------
+        {:des "Z Mode - Markdown"
+                :rules [:z-mode
+                        [:grave_accent_and_tilde [:ts "Code Line"]]             ;Code Line
+                        [:!Rgrave_accent_and_tilde [:ts "Code Block"]]          ;Code Block
+                        [:!S9 [:ts "Parenthesis"]]                              ;Parenthesis
+                        [:e [:!Tf17]]                                           ;Enclose options
+                        [:r [:km "8C2B33A2-79E1-4702-87CC-6D0A3ACB3194"]]       ;KM Search and Replace
+                        [:t [:ts "Title Case"]]                                 ;Title Case
+                        [:u [:ts "Uppercase"]]                                  ;Uppercase
+                        [:i [:ts "Italics"]]                                    ;Italics
+                        [:open_bracket [:ts "Brackets"]]                        ;Brackets
+                        [:!Sopen_bracket [:ts "Curly Brackets"]]                ;Curly Brackets
+                        [:s [:!Cf17]]                                           ;Simple options
+                        [:l [:km "BD69C99E-1E65-42BB-89B4-AFC8036F98D6"]]       ;Add link
+                        [:!Sl [:ts "Link Removal"]]                             ;Remove link
+                        [:quote [:ts "Single Quotes"]]                          ;Single Quotes
+                        [:!Squote [:ts "Double Quotes"]]                        ;Double Quotes
+                        [:c [:!Of17]]                                           ;Case options
+                        [:b [:ts "Bold"]]                                       ;Bold
+                        [:spacebar [:!COf17]]                                   ;TextSoap Window
+                ]}
+        ]
+}
+
+;; !  | means mandatory
+    ;; #  | means optional
+    ;; C  | left_command
+    ;; T  | left_control
+    ;; O  | left_option
+    ;; S  | left_shift
+    ;; F  | fn
+    ;; Q  | right_command
+    ;; W  | right_control
+    ;; E  | right_option
+    ;; R  | right_shift
+    ;; P  | caps_lock
+    ;; !! | mandatory command + control + optional + shift (hyper)
+    ;; ## | optional any
