@@ -1,6 +1,7 @@
 # My Keyboard Remappings with Karabiner
 This is constantly evolving, but when I started working on my keyboard I wrote [THIS ARTICLE.](https://afadingthought.substack.com/p/turbocharge-your-productivity-with
 )
+
 ---
 ## Table of Contents
   - [SIMPLE MODIFICATIONS](#simple-modifications)
@@ -206,21 +207,21 @@ This is constantly evolving, but when I started working on my keyboard I wrote [
 |----|---|---|---|---|
 | .  | 4 | 5 | 6 | - |
 | 0  | 1 | 2 | 3 | = |
-* n = 0
-* m = 1
-* comma = Two
-* period = Three
-* right shift = Equal sign
-* h = period
-* j = 4
-* k = 5
-* l = 6
 * y = Delete or Backspace
 * u = 7
 * i = 8
 * o = 9
 * p = plus
+* h = period
+* j = 4
+* k = 5
+* l = 6
 * semicolon = minus (hyphen)
+* n = 0
+* m = 1
+* comma = Two
+* period = Three
+* right shift = Equal sign
 ---
 ## T MODE (MARKDOWN & TEXTSOAP)
 ### Base Layer
