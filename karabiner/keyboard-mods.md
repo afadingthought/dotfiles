@@ -1,5 +1,5 @@
-# My Keyboard Remappings
-Read more in [THIS ARTICLE.](https://afadingthought.substack.com/p/turbocharge-your-productivity-with
+# My Keyboard Remappings with Karabiner
+This is constantly evolving, but when I started working on my keyboard I wrote [THIS ARTICLE.](https://afadingthought.substack.com/p/turbocharge-your-productivity-with
 )
 ---
 ## Table of Contents
