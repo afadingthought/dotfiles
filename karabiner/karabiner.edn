@@ -106,8 +106,8 @@
         {:des "Basics"
                 :rules [
                         [:delete_or_backspace :vk_none]
-                        [:non_us_backslash :grave_accent_and_tilde]
-                        [:right_control :fn]
+                        [:##non_us_backslash :grave_accent_and_tilde]
+                        [:##right_control :fn]
                 ]
         }
 
@@ -149,7 +149,7 @@
                         [:##right_shift :right_shift [:!w-mode :!caps-mode :!t-mode :!a-mode :!sd-mode :!e-mode]
                                 {:alone {:key :delete_forward}}]                                                        ;;Single tap right shift delete forward
                         [:##left_shift :left_shift [:!w-mode :!caps-mode :!t-mode :!a-mode :!sd-mode :!e-mode]
-                                {:alone {:key :delete_or_backspace}}]                                                   ;;Single tap left shift delete backward
+                                {:alone {:key :delete_or_backspace}}]                                                  ;;Single tap left shift delete backward
                 ;;DEL MODE LAYER
                         [:condi :del-mode :!terminal] [:##a :!Odelete_or_backspace]                                     ;;Delete words backward while pressing semicolon + a | outside Terminal
                         [:condi :del-mode :terminal] [:##a :!Tw]                                                        ;;Delete words backward while pressing semicolon + a | in Terminal
@@ -164,7 +164,7 @@
                 ;;RESTART Yabai server
                         [:tab "/opt/homebrew/bin/yabai --restart-service" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;TOGGLE Normal or Above subLayer
-                        [:q "layer=\"$(/opt/homebrew/bin/yabai --message query --windows --window | /opt/homebrew/bin/jq --raw-output '.\"sub-layer\"')\" && /opt/homebrew/bin/yabai --message window --layer \"$([ \"$layer\" = 'normal' ] && echo 'above' || echo 'normal')\"" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:q "layer=\"$(/opt/homebrew/bin/yabai --message query --windows --window | /opt/homebrew/bin/jq --raw-output '.\"sub-layer\"')\" && /opt/homebrew/bin/yabai --message window --sub-layer \"$([ \"$layer\" = 'normal' ] && echo 'above' || echo 'normal')\"" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;MISSION CONTROL or Show Desktop
                         [:##e :mission_control [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;TOGGLE Padding
@@ -416,24 +416,35 @@
                 ]},
 
 ;;--------------------------------------E MODE - Numpad & Symbols------------------------------------------------------------------------------------------------------
-        {:des "T Mode - Text Transformations"
+        {:des "E Mode - Numpad & Symbols"
                 :rules [:e-mode
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>NUMPAD>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                        [:n :0]                                       ;Cero
-                        [:m :1]                                       ;One
-                        [:comma :2]                                   ;Two
-                        [:period :3]                                  ;Three
-                        [:right_shift :equal_sign]                    ;Equal
-                        [:h :period]                                  ;Period
-                        [:j :4]                                       ;Four
-                        [:k :5]                                       ;Five
-                        [:l :6]                                       ;Six
-                        [:y :delete_or_backspace]                     ;Delete
-                        [:u :7]                                       ;Seven
-                        [:i :8]                                       ;Eight
-                        [:o :9]                                       ;Nine
-                        [:p :!Sequal_sign]                            ;Plus
-                        [:semicolon :hyphen]                          ;Minus
+                        [:y :delete_or_backspace ["fpress" 0]]                          ;Delete
+                        [:u :7 ["fpress" 0]]                                            ;Seven
+                        [:i :8 ["fpress" 0]]                                            ;Eight
+                        [:o :9 ["fpress" 0]]                                            ;Nine
+                        [:p :!Sequal_sign ["fpress" 0]]                                 ;Plus
+                        [:h :period ["fpress" 0]]                                       ;Period
+                        [:j :4 ["fpress" 0]]                                            ;Four
+                        [:k :5 ["fpress" 0]]                                            ;Five
+                        [:l :6 ["fpress" 0]]                                            ;Six
+                        [:semicolon :hyphen ["fpress" 0]]                               ;Minus
+                        [:n :0 ["fpress" 0]]                                            ;Cero
+                        [:m :1 ["fpress" 0]]                                            ;One
+                        [:comma :2 ["fpress" 0]]                                        ;Two
+                        [:period :3 ["fpress" 0]]                                       ;Three
+                        [:right_shift :equal_sign ["fpress" 0]]                         ;Equal
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>F SUBLAYER - SYMBOLS I>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        [:f [["fpress" 1]] nil {:afterup {:set ["fpress" 0]}}]          ;F Layer Creation
+                        [:i :!S8 ["fpress" 1]]
+                        [:semicolon :!Shyphen ["fpress" 1]]
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CMD SUBLAYER - SYMBOLS II>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        [:!Ci :!O8 ["fpress" 0]]
+                        [:!Csemicolon :!OShyphen ["fpress" 0]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 ]},
 
@@ -482,9 +493,17 @@
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MEDIA KEYS on NUMBERS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 ;;MEDIA BUTTONS on numbers
                         [:equal_sign :volume_increment [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SWITCH AUDIO OUTPUT to Airpods
+                        [:!Cequal_sign [:alfred "headphones" "com.beet.alfred_audio_switcher"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                         [:hyphen :volume_decrement [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SWITCH AUDIO OUTPUT to Speakers
+                        [:!Chyphen [:alfred "speakers" "com.beet.alfred_audio_switcher"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                         [:0 :mute [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SWITCH AUDIO OUTPUT to Laptop
+                        [:!C0 [:alfred "laptop" "com.beet.alfred_audio_switcher"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                         [:9 :fastforward [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;SWITCH AUDIO OUTPUT to UsbHeadphohes
+                        [:!C9 [:alfred "usbHeadphones" "com.beet.alfred_audio_switcher"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                         [:8 :play_or_pause [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                         [:7 :rewind [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                         [:6 :vk_none [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
@@ -498,7 +517,7 @@
                         [:!C1 :illumination_decrement [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CAPS LOCK - BASE LAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>BASE LAYER (CAPS LOCK)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 ;;DELETE BEAR NOTE
                         [:w [:km "9A812F68-7857-4ACE-A7BD-8AF3AEEE57CE"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;READWISE TO BEAR Shortcut
@@ -506,12 +525,12 @@
                                 shortcuts run \"RW to Bear\"" [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;ANSWER IMESSAGE NOTIFICATION
                         [:i [:km "DC6A4949-C8D1-4024-AC50-74D34142C8AC"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                ;;DAY ONE MASTER SHORTCUT
+                        [:o [:sc "" "Day One Master"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;UPDATE PLEX SERVER
                         [:p [:!STp [:km "838EBFC2-7F83-48C5-AF0C-248638A8AD65"]] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;CAFFEINATE WORKFLOW
                         [:s [:alfred "caff" "com.shawn.patrick.rice.caffeinate.control"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
-                ;;DAY ONE MASTER SHORTCUT
-                        [:!Cd [:sc "" "Day One Master"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;FINDER WINDOW ON DESKTOP
                         [:f [:alfred "desktop" "com.finder.chuba"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;FINDER WINDOW ON DROPOVER
@@ -632,10 +651,11 @@
                         [:y :!OS1 ["cpress" 1]]         ;OCR with Linebreaks
                         [:u :!OS2 ["cpress" 1]]         ;OCR without Linebreaks
                         [:d :!CS5 ["cpress" 1]]         ;All in One bar
-                        [:h :!OS5 ["cpress" 1]]         ;Cature History
+                        [:h :!OS3 ["cpress" 1]]         ;Capture Area & Pin
                         [:j :!CS4 ["cpress" 1]]         ;Capture Area
                         [:k :!OS4 ["cpress" 1]]         ;Capture Area to Clipboard
                         [:l :!CS3 ["cpress" 1]]         ;Capture Area & Annotate
+                        [:spacebar :!OS5 ["cpress" 1]]  ;Cature History
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 ]},
 
@@ -667,52 +687,81 @@
                         [:r [["rpress" 1]] [["dpress" 0]["bpress" 0]] {:afterup {:set ["rpress" 0]}}]
                         [:b [["bpress" 1]] [["rpress" 0]["dpress" 0]] {:afterup {:set ["bpress" 0]}}]
                         [:d [["dpress" 1]] [["rpress" 0]["bpress" 0]] {:afterup {:set ["dpress" 0]}}]
+                        [:w [["wpress" 1]] nil {:afterup {:set ["wpress" 0]}}]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>BASE LAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 ;REVEAL Kiki Data Path
-                        [:f [:alfred "kikiFiles" "com.kiki.ai" "filesRevealPath"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:f [:alfred "kikiFiles" "com.kiki.ai" "filesRevealPath"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;COPY Last Response
-                        [:h [:alfred "kikiFiles" "com.kiki.ai" "filesCopyResponse"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:h [:alfred "kikiFiles" "com.kiki.ai" "filesCopyResponse"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;COPY Context File to Specified Path
-                        [:j [:alfred "kikiFiles" "com.kiki.ai" "filesCopyContext"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:j [:alfred "kikiFiles" "com.kiki.ai" "filesCopyContext"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;TRIGGER Markdown Chat
-                        [:return_or_enter [:alfred "kikiMD" "com.kiki.ai"] [:bear ["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:return_or_enter [:alfred "kikiMD" "com.kiki.ai"] [:bear ["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;PRESETS MENU
-                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,custom,1"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,custom,1"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;QUICK CHAT
-                        [:spacebar [:alfred "kikiChat" "com.kiki.ai"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:spacebar [:alfred "kikiChat" "com.kiki.ai"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>COMMAND LAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                ;WHISPER Transcribe and Paste
+                        [:!Cj [:alfred "kikiActions" "com.kiki.ai" "paste,whisper"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
+                ;WHISPER Journal - Response in Dialog
+                        [:!Co [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,1,diario"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;TRANSLATE to English - Response in Dialog
-                        [:!Ct [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,translateEn"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:!Ct [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,translateEn"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;SIMPLIFY - Paste in Frontmost
-                        [:!Cs [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,simplify"] [["rpress" 0]["bpress" 0]["dpress" 0]]]
+                        [:!Cs [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,simplify"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
+                ;WHISPER Transcription Prompt for Selected Text = Alfred Bar
+                        [:!Cright_shift [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,customWhisperPrompt"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
+                ;WHISPER QUICK DIALOG REQUEST - Response in Dialog
+                        [:!Cspacebar [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,17,useAsPrompt"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SELECTED TEXT ACTIONS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ;>>>>>>>>>>>>>>>>>>>>>>>>>>>SELECTED TEXT or WHISPER ACTIONS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 ;;PASTE IN FRONTMOST
-                ;;Add a Custom Prompt
-                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,customPrompt"] ["rpress" 1]]
-                ;;Use as Prompt
-                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,useAsPrompt"] ["rpress" 1]]
-                ;;Send to Presets Menu
-                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,4"] ["rpress" 1]]
+                ;Add a Custom Prompt to Selected Text
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,customPrompt"] [["rpress" 1]["wpress" 0]]]
+                ;Add a Custom Prompt to Whisper Transcription
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,4,customPrompt"] [["rpress" 1]["wpress" 1]]]
+                ;Use Selected Text as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,useAsPrompt"] [["rpress" 1]["wpress" 0]]]
+                ;Use Whisper Transcription as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,4,useAsPrompt"] [["rpress" 1]["wpress" 1]]]
+                ;Send Selected Text to Presets Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,4"] [["rpress" 1]["wpress" 0]]]
+                ;Send Whisper Transcription to Presets Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,whisper,4"] [["rpress" 1]["wpress" 1]]]
+
                 ;;PLACE BELOW
-                ;;Selected text as Input for Asking
-                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,6,customPrompt"] ["bpress" 1]]
-                ;;Selected text as Prompt
-                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,6,useAsPrompt"] ["bpress" 1]]
-                ;;Selected text as Input for Menu
-                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,6"] ["bpress" 1]]
+                ;Selected text as Input for Asking
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,6,customPrompt"] [["bpress" 1]["wpress" 0]]]
+                ;Whisper Transcription as Input for Asking
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,6,customPrompt"] [["bpress" 1]["wpress" 1]]]
+                ;Selected text as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,6,useAsPrompt"] [["bpress" 1]["wpress" 0]]]
+                ;Whisper Transcription as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,6,useAsPrompt"] [["bpress" 1]["wpress" 1]]]
+                ;Selected text as Input for Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,6"] [["bpress" 1]["wpress" 0]]]
+                ;Whisper Transcription as Input for Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,whisper,6"] [["bpress" 1]["wpress" 1]]]
+
                 ;;DIALOG
-                ;;Selected text as Input for Asking
-                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,customPrompt"] ["dpress" 1]]
-                ;;Selected text as Prompt
-                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,useAsPrompt"] ["dpress" 1]]
-                ;;Selected text as Input for Menu
-                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,1"] ["dpress" 1]]
+                ;Selected text as Input for Asking
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,customPrompt"] [["dpress" 1]["wpress" 0]]]
+                ;Whisper Transcription as Input for Asking
+                        [:spacebar [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,1,customPrompt"] [["dpress" 1]["wpress" 1]]]
+                ;Selected text as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,useAsPrompt"] [["dpress" 1]["wpress" 0]]]
+                ;Whisper Transcription as Prompt
+                        [:p [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,1,useAsPrompt"] [["dpress" 1]["wpress" 1]]]
+                ;Selected text as Input for Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,copy,1"] [["dpress" 1]["wpress" 0]]]
+                ;Whisper Transcription as Input for Menu
+                        [:m [:alfred "kikiActions" "com.kiki.ai" "menu,whisper,1"] [["dpress" 1]["wpress" 1]]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
                 ]},
