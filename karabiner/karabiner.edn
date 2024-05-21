@@ -149,10 +149,35 @@
                         [:##right_shift :right_shift [:!w-mode :!caps-mode :!t-mode :!a-mode :!sd-mode :!e-mode]
                                 {:alone {:key :delete_forward}}]                                                        ;;Single tap right shift delete forward
                         [:##left_shift :left_shift [:!w-mode :!caps-mode :!t-mode :!a-mode :!sd-mode :!e-mode]
-                                {:alone {:key :delete_or_backspace}}]                                                  ;;Single tap left shift delete backward
+                                {:alone {:key :delete_or_backspace}}]                                                   ;;Single tap left shift delete backward
                 ;;DEL MODE LAYER
                         [:condi :del-mode :!terminal] [:##a :!Odelete_or_backspace]                                     ;;Delete words backward while pressing semicolon + a | outside Terminal
                         [:condi :del-mode :terminal] [:##a :!Tw]                                                        ;;Delete words backward while pressing semicolon + a | in Terminal
+                ]},
+
+;;--------------------------------------------MOUSE and LAYERS------------------------------------------------------------------------------------------------------
+        {:des "Mouse Mods"
+                :rules [
+               ;         [{:pkey :button1} ["b1press" 1] [["b2press" 0]["b4press" 0]] {:afterup {:set ["b1press" 0]}  :alone {:pkey :button1 :halt true} :held {:pkey :button1 :repeat true} :params {:alone 10 :held 11}}]
+               ;         [{:pkey :button2} ["b2press" 1] [["b1press" 0]["b4press" 0]] {:afterup {:set ["b2press" 0]}  :alone {:pkey :button2 :halt true} :held {:pkey :button2 :repeat true} :params {:alone 10 :held 11}}]
+               ;         [{:pkey :button4} ["b4press" 1] [["b1press" 0]["b2press" 0]] {:afterup {:set ["b4press" 0]}  :alone {:pkey :button4 :halt true} :held {:pkey :button4 :repeat true} :params {:alone 10 :held 11}}]
+               ;         [{:pkey :button2} [:yabai "space --focus next"] [["b4press" 1]["b2press" 0]["b1press" 0]]]
+               ;         [{:pkey :button1} [:yabai "space --focus prev"] [["b4press" 1]["b2press" 0]["b1press" 0]]]
+                        [{:pkey :button1 :modi :left_control} [:btt "SpotPrev"]]                                        ;Rewind Audio
+                        [{:pkey :button2 :modi :left_control} [:btt "SpotNext"]]                                        ;FWD Audio
+                        [{:pkey :button2} [:yabai "space --focus next"] [["w-mode" 1]["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]         ;Space Switch
+                        [{:pkey :button1} [:yabai "space --focus prev"] [["w-mode" 1]["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]         ;Space Switch
+                        [{:pkey :button3} :!TSO1 ["sd-mode" 1]]                                                         ;APP Switcher - Contexts
+                        [{:pkey :button1} :!Ctab ["sd-mode" 1]]                                                         ;App Switcher - Two last
+                        [{:pkey :button2} :!Otab ["sd-mode" 1]]                                                         ;Window Switcher - Two last
+                        [{:pkey :button4} :!Ttab ["sd-mode" 1]]                                                         ;Arc Switch Last two tabs... also other apps
+                        [{:pkey :button5} [:alfred "arctabs" "com.chubamisc.afred"] ["sd-mode" 1]]                      ;Arc Open Tabs Alfred
+                        ;FCPX
+                        [{:pkey :button2 :modi :left_command} :l :finalcutpro]
+                        [{:pkey :button1 :modi :left_command} :j :finalcutpro]
+                        ;ARC
+                        [{:pkey :button1 :modi [:left_command :left_option]} [:km "6FDAC53E-DD84-453A-9590-E3231DB9E72B"] :arc]
+                        [{:pkey :button2 :modi [:left_command :left_option]} [:km "ED25AFC7-32C6-4B8E-A474-333FE3EF3FD0"] :arc]
                 ]},
 
 ;;------------------------------------------W MODE - YABAI------------------------------------------------------------------------------------------------------
@@ -192,7 +217,7 @@
                 ;;CREATE Space & GO
                         [:quote [:yabai "space --create && echo \"refresh\" | nc -U /tmp/yabai-indicator.socket && /opt/homebrew/bin/yabai -m space --focus last"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;TOGGLE Fullscreen Zoom
-                        [:return_or_enter "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/ToggleMaximize.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:return_or_enter "~/Dropbox/2-Areas/SystemAndApps/Yabai/ToggleMaximize.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;STACKLINE Icons Toggle
                         [:x "/opt/homebrew/bin/hs -c 'stackline.config:toggle(\"appearance.showIcons\")'" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;RESET Balance
@@ -208,7 +233,7 @@
                 ;;SWITCH to the Previous Space
                         [:right_shift [:yabai "space --focus recent"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;TOGGLE Float
-                        [:spacebar "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/ToggleFloatRememberSize.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:spacebar "~/Dropbox/2-Areas/SystemAndApps/Yabai/ToggleFloatRememberSize.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CMD LAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -241,7 +266,7 @@
                 ;;SWITCH to Space 3
                         [:!Cperiod [:yabai "space --focus 3"] [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
                 ;;CLEAR Cache of Floats position
-                        [:!Cspacebar "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/ClearFloatCache.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
+                        [:!Cspacebar "~/Dropbox/2-Areas/SystemAndApps/Yabai/ClearFloatCache.sh" [["cpress" 0]["vpress" 0]["dpress" 0]["rpress" 0]["gpress" 0]["fpress" 0]]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>D(INSERT, STACK, THROW & DON'T GO) LAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -285,13 +310,13 @@
                 ;;HIDE ALL
                         [:e [:btt "HideAll"]["fpress" 1]]
                 ;;CYCLE Focus Backwards (WITHOUT Floats or Entering Stacks)
-                        [:y "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusNoStackCounter.sh" ["fpress" 1]]
+                        [:y "~/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusNoStackCounter.sh" ["fpress" 1]]
                 ;;FOCUS BELOW in Stack
                         [:u [:yabai "window --focus stack.next || /opt/homebrew/bin/yabai -m window --focus stack.first"] ["fpress" 1]]
                 ;;FOCUS ABOVE in Stack
                         [:i [:yabai "window --focus stack.prev || /opt/homebrew/bin/yabai -m window --focus stack.last"] ["fpress" 1]]
                 ;;CYCLE Focus Forward (WITHOUT Floats or Entering Stacks)
-                        [:o "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusNoStackClock.sh" ["fpress" 1]]
+                        [:o "~/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusNoStackClock.sh" ["fpress" 1]]
                 ;;FOCUS West
                         [:h [:yabai "window --focus west"] ["fpress" 1]]
                 ;;FOCUS South
@@ -303,13 +328,13 @@
                 ;;FULLSCREEN with BTT
                         [:return_or_enter [:btt "RealFull"] ["fpress" 1]]
                 ;;CYCLE Focus Backwards (ALL)
-                        [:n "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusAllForward.sh" ["fpress" 1]]
+                        [:n "~/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusAllForward.sh" ["fpress" 1]]
                 ;;OPACITY Full Lock
                         [:m [:yabai "window --opacity 1.0"] ["fpress" 1]]
                 ;;OPACITY Unlock (Back to Default)
                         [:comma [:yabai "window --opacity 0.0"] ["fpress" 1]]
                 ;;CYCLE Focus Forward (ALL)
-                        [:period "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusAllBackward.sh" ["fpress" 1]] 
+                        [:period "~/Dropbox/2-Areas/SystemAndApps/Yabai/cycleFocusAllBackward.sh" ["fpress" 1]] 
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>G(SWAP & THROW & GO) LAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -351,9 +376,9 @@
                 ;;ROTATE Arrangement in Reverse
                         [:h [:yabai "space --rotate 90"] ["rpress" 1]]
                 ;;ROTATE Windows Only in Reverse
-                        [:j "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleWindowsOnlyclockwise.sh" ["rpress" 1]]
+                        [:j "~/Dropbox/2-Areas/SystemAndApps/Yabai/cycleWindowsOnlyclockwise.sh" ["rpress" 1]]
                 ;;ROTATE Windows Only Forward
-                        [:k "~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/cycleWindowsOnlycounter.sh" ["rpress" 1]]
+                        [:k "~/Dropbox/2-Areas/SystemAndApps/Yabai/cycleWindowsOnlycounter.sh" ["rpress" 1]]
                 ;;ROTATE Arrangement Forward
                         [:l [:yabai "space --rotate 270"] ["rpress" 1]]
                 ;;TOGGLE Zoom on Parent
@@ -569,20 +594,20 @@
                 ;;NEW FLOATING LITTLE ARC
                         [:right_shift [[:yabai "signal --remove littlearc;\\
                                 /opt/homebrew/bin/yabai -m signal --add label=littlearccmd event=window_title_changed\\
-                                action=\"~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/LittleArcCMD.sh floatcenter\""] :!TOCn]
+                                action=\"~/Dropbox/2-Areas/SystemAndApps/Yabai/LittleArcCMD.sh floatcenter\""] :!TOCn]
                                 [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;NEW TILED LITTLE ARC
                         [:!Cright_shift [[:yabai "signal --remove littlearc;\\
                                 /opt/homebrew/bin/yabai -m signal --add label=littlearccmd event=window_title_changed\\
-                                action=\"~/Library/CloudStorage/Dropbox/2-Areas/SystemAndApps/Yabai/LittleArcCMD.sh tile\""] :!TOCn]
+                                action=\"~/Dropbox/2-Areas/SystemAndApps/Yabai/LittleArcCMD.sh tile\""] :!TOCn]
                                 [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;NEW FLOATING BEAR NOTE
-                        [:spacebar [:open "bear://x-callback-url/create?text=%23%20New%20Note%0A---%0A%230-inbox%0A---%0A&new_window=yes&open_note=yes&edit=yes"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
+                        [:spacebar "~/Dropbox/2-Areas/SystemAndApps/Karabiner/bearNewNote.sh" [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]
                 ;;NEW TILED BEAR NOTE
                         [:!Cspacebar ["/opt/homebrew/bin/yabai -m signal --add label=tile_next title='^New Note$' event=window_created\\
                         action='/opt/homebrew/bin/yabai -m signal --remove tile_next;\\
                         /opt/homebrew/bin/yabai -m window $YABAI_WINDOW_ID --toggle float';\\
-                        open 'bear://x-callback-url/create?text=%23%20New%20Note%0A---%0A%230-inbox%0A---%0A&new_window=yes&open_note=yes&edit=yes'"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]             
+                        ~/Dropbox/2-Areas/SystemAndApps/Karabiner/bearNewNote.sh"] [["dpress" 0]["apress" 0]["epress" 0]["cpress" 0]]]             
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
        
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ARC EXTENSIONS SUBLAYER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -713,11 +738,12 @@
                 ;TRANSLATE to English - Response in Dialog
                         [:!Ct [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,translateEn"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;SIMPLIFY - Paste in Frontmost
-                        [:!Cs [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,simplify"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
+                        [:!Cs [:alfred "kikiActions" "com.kiki.ai" "direct,copy,4,simpliRW"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;WHISPER Transcription Prompt for Selected Text = Alfred Bar
                         [:!Cright_shift [:alfred "kikiActions" "com.kiki.ai" "direct,copy,1,customWhisperPrompt"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
                 ;WHISPER QUICK DIALOG REQUEST - Response in Dialog
                         [:!Cspacebar [:alfred "kikiActions" "com.kiki.ai" "direct,whisper,17,useAsPrompt"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
+                        [:!Cright_command [:alfred "kikiActions" "com.kiki.ai" "menu,whisper,1"] [["rpress" 0]["bpress" 0]["dpress" 0]["wpress" 0]]]
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         ;>>>>>>>>>>>>>>>>>>>>>>>>>>>SELECTED TEXT or WHISPER ACTIONS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -830,6 +856,7 @@
                         [:##n :!Tw [["cpress" 0]["opress" 1]]]                          ;Delete Back a Word
                         [:##period :delete_forward [["cpress" 0]["opress" 0]]]          ;Normal Delete Forward
                         [:##period :!Tk [["cpress" 1]["opress" 0]]]                     ;Delete Forward to End of Line
+                        [:##period [:escape :d] [["cpress" 0]["opress" 1]]]             ;Delete Forward by word
                         [:##j :down_arrow]                                              ;Normal Down
                         [:##k :up_arrow]                                                ;Normal Up
 
