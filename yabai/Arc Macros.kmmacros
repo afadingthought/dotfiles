@@ -13,6 +13,16 @@
 				<key>Actions</key>
 				<array>
 					<dict>
+						<key>ActionUID</key>
+						<integer>15474129</integer>
+						<key>MacroActionType</key>
+						<string>Pause</string>
+						<key>Time</key>
+						<string>.2</string>
+						<key>TimeOutAbortsMacro</key>
+						<true/>
+					</dict>
+					<dict>
 						<key>Action</key>
 						<string>MoveAndClick</string>
 						<key>ActionUID</key>
@@ -89,6 +99,16 @@
 						<false/>
 						<key>VerticalPositionExpression</key>
 						<string>0</string>
+					</dict>
+					<dict>
+						<key>ActionUID</key>
+						<integer>15474521</integer>
+						<key>MacroActionType</key>
+						<string>Pause</string>
+						<key>Time</key>
+						<string>.2</string>
+						<key>TimeOutAbortsMacro</key>
+						<true/>
 					</dict>
 					<dict>
 						<key>Action</key>
@@ -179,7 +199,7 @@
 				<key>CreationDate</key>
 				<real>738003511.50583696</real>
 				<key>ModificationDate</key>
-				<real>738003524.28453004</real>
+				<real>738008071.58239198</real>
 				<key>Name</key>
 				<string>- Open Link Under Mouse as Tile</string>
 				<key>Triggers</key>
@@ -205,6 +225,16 @@
 			<dict>
 				<key>Actions</key>
 				<array>
+					<dict>
+						<key>ActionUID</key>
+						<integer>15474519</integer>
+						<key>MacroActionType</key>
+						<string>Pause</string>
+						<key>Time</key>
+						<string>.2</string>
+						<key>TimeOutAbortsMacro</key>
+						<true/>
+					</dict>
 					<dict>
 						<key>Action</key>
 						<string>MoveAndClick</string>
@@ -282,6 +312,16 @@
 						<false/>
 						<key>VerticalPositionExpression</key>
 						<string>0</string>
+					</dict>
+					<dict>
+						<key>ActionUID</key>
+						<integer>15474520</integer>
+						<key>MacroActionType</key>
+						<string>Pause</string>
+						<key>Time</key>
+						<string>.2</string>
+						<key>TimeOutAbortsMacro</key>
+						<true/>
 					</dict>
 					<dict>
 						<key>Action</key>
@@ -372,7 +412,7 @@
 				<key>CreationDate</key>
 				<real>738002788.11843598</real>
 				<key>ModificationDate</key>
-				<real>738003478.95069897</real>
+				<real>738008055.54864502</real>
 				<key>Name</key>
 				<string>- Open Link Under Mouse as Float</string>
 				<key>Triggers</key>
