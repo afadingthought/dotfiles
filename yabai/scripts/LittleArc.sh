@@ -21,6 +21,6 @@ if [[ "$app" == "Arc" && "$sublayer" == "normal" && "$isfloating" == "true" ]]; 
 # Check if app is Arc, layer is above, and window is floating - will tile it (yabaitile tag)
 elif [[ "$app" == "Arc" && "$sublayer" == "above" && "$isfloating" == "true" ]]; then
     # Create the test.txt file with "hey" as content
-    sleep .3
+    sleep .5
     /opt/homebrew/bin/yabai -m window "$window_id" --toggle float --sub-layer normal
 fi
