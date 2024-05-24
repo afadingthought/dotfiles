@@ -14,169 +14,7 @@
 				<array>
 					<dict>
 						<key>ActionUID</key>
-						<integer>15474129</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>MoveAndClick</string>
-						<key>ActionUID</key>
-						<integer>15473729</integer>
-						<key>Button</key>
-						<integer>1</integer>
-						<key>ClickCount</key>
-						<integer>1</integer>
-						<key>DisplayMatches</key>
-						<false/>
-						<key>DragHorizontalPosition</key>
-						<string>0</string>
-						<key>DragVerticalPosition</key>
-						<string>0</string>
-						<key>Fuzz</key>
-						<integer>15</integer>
-						<key>HorizontalPositionExpression</key>
-						<string>0</string>
-						<key>MacroActionType</key>
-						<string>MouseMoveAndClick</string>
-						<key>Modifiers</key>
-						<integer>0</integer>
-						<key>MouseDrag</key>
-						<string>Hold</string>
-						<key>Relative</key>
-						<string>Mouse</string>
-						<key>RelativeCorner</key>
-						<string>TopLeft</string>
-						<key>RestoreMouseLocation</key>
-						<false/>
-						<key>VerticalPositionExpression</key>
-						<string>0</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473730</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>MoveAndClick</string>
-						<key>ActionUID</key>
-						<integer>15473731</integer>
-						<key>Button</key>
-						<integer>1</integer>
-						<key>ClickCount</key>
-						<integer>-1</integer>
-						<key>DisplayMatches</key>
-						<false/>
-						<key>DragHorizontalPosition</key>
-						<string>0</string>
-						<key>DragVerticalPosition</key>
-						<string>0</string>
-						<key>Fuzz</key>
-						<integer>15</integer>
-						<key>HorizontalPositionExpression</key>
-						<string>0</string>
-						<key>MacroActionType</key>
-						<string>MouseMoveAndClick</string>
-						<key>Modifiers</key>
-						<integer>0</integer>
-						<key>MouseDrag</key>
-						<string>None</string>
-						<key>Relative</key>
-						<string>Window</string>
-						<key>RelativeCorner</key>
-						<string>TopLeft</string>
-						<key>RestoreMouseLocation</key>
-						<false/>
-						<key>VerticalPositionExpression</key>
-						<string>0</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15474521</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>ByTyping</string>
-						<key>ActionUID</key>
-						<integer>15473732</integer>
-						<key>MacroActionType</key>
-						<string>InsertText</string>
-						<key>TargetApplication</key>
-						<dict/>
-						<key>TargetingType</key>
-						<string>Front</string>
-						<key>Text</key>
-						<string>co</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473733</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473734</integer>
-						<key>KeyCode</key>
-						<integer>36</integer>
-						<key>MacroActionType</key>
-						<string>SimulateKeystroke</string>
-						<key>Modifiers</key>
-						<integer>0</integer>
-						<key>ReleaseAll</key>
-						<false/>
-						<key>TargetApplication</key>
-						<dict/>
-						<key>TargetingType</key>
-						<string>Front</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473735</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.4</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>PercentEncodeForURL</string>
-						<key>ActionUID</key>
-						<integer>15473736</integer>
-						<key>Destination</key>
-						<string>Variable</string>
-						<key>DestinationVariable</key>
-						<string>clippy</string>
-						<key>MacroActionType</key>
-						<string>Filter</string>
-						<key>Source</key>
-						<string>Clipboard</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473737</integer>
+						<integer>15473324</integer>
 						<key>Application</key>
 						<dict>
 							<key>BundleIdentifier</key>
@@ -193,19 +31,19 @@
 						<key>TimeOutAbortsMacro</key>
 						<true/>
 						<key>URL</key>
-						<string>https://www.google.com/search?q=%clippy%#ybt</string>
+						<string>%SystemClipboard%</string>
 					</dict>
 				</array>
 				<key>CreationDate</key>
-				<real>738003511.50583696</real>
+				<real>737921286.50371397</real>
 				<key>ModificationDate</key>
-				<real>738008071.58239198</real>
+				<real>738255589.27466094</real>
 				<key>Name</key>
-				<string>- Open Link Under Mouse as Tile</string>
+				<string>Open Link in Clipboard as Tile</string>
 				<key>Triggers</key>
 				<array/>
 				<key>UID</key>
-				<string>ED25AFC7-32C6-4B8E-A474-333FE3EF3FD0</string>
+				<string>6B843980-4E0C-4CCC-A406-13AEAC2C0361</string>
 			</dict>
 		</array>
 		<key>Name</key>
@@ -227,169 +65,7 @@
 				<array>
 					<dict>
 						<key>ActionUID</key>
-						<integer>15474519</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>MoveAndClick</string>
-						<key>ActionUID</key>
-						<integer>15473328</integer>
-						<key>Button</key>
-						<integer>1</integer>
-						<key>ClickCount</key>
-						<integer>1</integer>
-						<key>DisplayMatches</key>
-						<false/>
-						<key>DragHorizontalPosition</key>
-						<string>0</string>
-						<key>DragVerticalPosition</key>
-						<string>0</string>
-						<key>Fuzz</key>
-						<integer>15</integer>
-						<key>HorizontalPositionExpression</key>
-						<string>0</string>
-						<key>MacroActionType</key>
-						<string>MouseMoveAndClick</string>
-						<key>Modifiers</key>
-						<integer>0</integer>
-						<key>MouseDrag</key>
-						<string>Hold</string>
-						<key>Relative</key>
-						<string>Mouse</string>
-						<key>RelativeCorner</key>
-						<string>TopLeft</string>
-						<key>RestoreMouseLocation</key>
-						<false/>
-						<key>VerticalPositionExpression</key>
-						<string>0</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473329</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>MoveAndClick</string>
-						<key>ActionUID</key>
-						<integer>15473728</integer>
-						<key>Button</key>
-						<integer>1</integer>
-						<key>ClickCount</key>
-						<integer>-1</integer>
-						<key>DisplayMatches</key>
-						<false/>
-						<key>DragHorizontalPosition</key>
-						<string>0</string>
-						<key>DragVerticalPosition</key>
-						<string>0</string>
-						<key>Fuzz</key>
-						<integer>15</integer>
-						<key>HorizontalPositionExpression</key>
-						<string>0</string>
-						<key>MacroActionType</key>
-						<string>MouseMoveAndClick</string>
-						<key>Modifiers</key>
-						<integer>0</integer>
-						<key>MouseDrag</key>
-						<string>None</string>
-						<key>Relative</key>
-						<string>Window</string>
-						<key>RelativeCorner</key>
-						<string>TopLeft</string>
-						<key>RestoreMouseLocation</key>
-						<false/>
-						<key>VerticalPositionExpression</key>
-						<string>0</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15474520</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>ByTyping</string>
-						<key>ActionUID</key>
-						<integer>15473330</integer>
-						<key>MacroActionType</key>
-						<string>InsertText</string>
-						<key>TargetApplication</key>
-						<dict/>
-						<key>TargetingType</key>
-						<string>Front</string>
-						<key>Text</key>
-						<string>co</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473331</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.2</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473332</integer>
-						<key>KeyCode</key>
-						<integer>36</integer>
-						<key>MacroActionType</key>
-						<string>SimulateKeystroke</string>
-						<key>Modifiers</key>
-						<integer>0</integer>
-						<key>ReleaseAll</key>
-						<false/>
-						<key>TargetApplication</key>
-						<dict/>
-						<key>TargetingType</key>
-						<string>Front</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473333</integer>
-						<key>MacroActionType</key>
-						<string>Pause</string>
-						<key>Time</key>
-						<string>.4</string>
-						<key>TimeOutAbortsMacro</key>
-						<true/>
-					</dict>
-					<dict>
-						<key>Action</key>
-						<string>PercentEncodeForURL</string>
-						<key>ActionUID</key>
-						<integer>15473724</integer>
-						<key>Destination</key>
-						<string>Variable</string>
-						<key>DestinationVariable</key>
-						<string>clippy</string>
-						<key>MacroActionType</key>
-						<string>Filter</string>
-						<key>Source</key>
-						<string>Clipboard</string>
-					</dict>
-					<dict>
-						<key>ActionUID</key>
-						<integer>15473725</integer>
+						<integer>15473322</integer>
 						<key>Application</key>
 						<dict>
 							<key>BundleIdentifier</key>
@@ -406,19 +82,19 @@
 						<key>TimeOutAbortsMacro</key>
 						<true/>
 						<key>URL</key>
-						<string>https://www.google.com/search?q=%clippy%#ybf</string>
+						<string>%SystemClipboard%#ybf</string>
 					</dict>
 				</array>
 				<key>CreationDate</key>
-				<real>738002788.11843598</real>
+				<real>737921129.94784403</real>
 				<key>ModificationDate</key>
-				<real>738008055.54864502</real>
+				<real>738255483.93600905</real>
 				<key>Name</key>
-				<string>- Open Link Under Mouse as Float</string>
+				<string>Open Link in Clipboard as Float</string>
 				<key>Triggers</key>
 				<array/>
 				<key>UID</key>
-				<string>6FDAC53E-DD84-453A-9590-E3231DB9E72B</string>
+				<string>A21A2354-1992-43DF-9A63-00036D4AE580</string>
 			</dict>
 		</array>
 		<key>Name</key>
